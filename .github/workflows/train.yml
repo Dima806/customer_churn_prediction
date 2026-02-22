@@ -37,20 +37,20 @@ jobs:
         run: uv python install 3.12
 
       - name: Install runtime dependencies
-        run: uv sync --no-dev
+        run: make install-runtime
 
       # -----------------------------------------------------------------------
       # Step 1 – Data
       # -----------------------------------------------------------------------
       - name: Generate synthetic data
-        run: uv run python -m src.data_generation.main
+        run: make data
 
       # -----------------------------------------------------------------------
       # Step 2 – Tune (optional, skipped on automatic pushes unless requested)
       # -----------------------------------------------------------------------
       - name: Tune hyperparameters
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_tune == true }}
-        run: uv run python -m src.models.tune
+        run: make tune
         env:
           N_TRIALS: ${{ inputs.n_trials }}
 
@@ -58,13 +58,13 @@ jobs:
       # Step 3 – Train
       # -----------------------------------------------------------------------
       - name: Train model
-        run: uv run python -m src.models.train
+        run: make train
 
       # -----------------------------------------------------------------------
       # Step 4 – Predict
       # -----------------------------------------------------------------------
       - name: Batch predict
-        run: uv run python -m src.prediction.batch_predict
+        run: make predict
 
       # -----------------------------------------------------------------------
       # Upload artifacts

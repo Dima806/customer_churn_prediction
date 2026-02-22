@@ -3,8 +3,9 @@
 # All commands use `uv run` to stay inside the project's virtual environment.
 # ===========================================================================
 
-.PHONY: install data lint format audit security complexity maintainability \
-        test tune train predict dashboard docker-build all help
+.PHONY: install install-runtime data lint format audit security complexity \
+        maintainability test test-verbose test-ci tune train predict dashboard \
+        docker-build docker-run all ci help
 
 # ---------------------------------------------------------------------------
 # Setup
@@ -12,6 +13,9 @@
 
 install:          ## Install all dependencies (incl. dev group)
 	uv sync --all-groups
+
+install-runtime:  ## Install runtime dependencies only, no dev tools (used by CI train job)
+	uv sync --no-dev
 
 # ---------------------------------------------------------------------------
 # Data generation
