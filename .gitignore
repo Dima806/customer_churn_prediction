@@ -213,3 +213,6 @@ __marimo__/
 data/
 predictions/
 artifacts/
+
+# vscode settings
+.vscode/

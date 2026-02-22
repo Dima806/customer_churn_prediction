@@ -57,9 +57,10 @@ def generate_customers(
             reg_start = start + pd.Timedelta(days=365)
             reg_end = end - pd.Timedelta(days=180)
         else:
-            # Most customers already present or join near start
+            # Spread registrations across the full period so that both
+            # train and test cohorts share the same registration range.
             reg_start = start
-            reg_end = start + pd.Timedelta(days=180)
+            reg_end = end - pd.Timedelta(days=180)
 
         span = max(1, (reg_end - reg_start).days)
         offset = int(rng.integers(0, span))

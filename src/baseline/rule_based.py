@@ -63,6 +63,8 @@ def evaluate_baseline(
     """
     from sklearn.metrics import (
         average_precision_score,
+        brier_score_loss,
+        f1_score,
         precision_score,
         recall_score,
         roc_auc_score,
@@ -73,16 +75,24 @@ def evaluate_baseline(
     y_pred, y_score = predict_churn_rule_based(df, churn_period_days)
 
     metrics = {
-        "precision": float(precision_score(y_true, y_pred, average="weighted", zero_division=0)),
-        "recall": float(recall_score(y_true, y_pred, average="weighted", zero_division=0)),
         "roc_auc": float(roc_auc_score(y_true, y_score)),
         "pr_auc": float(average_precision_score(y_true, y_score)),
+        "brier_score": float(brier_score_loss(y_true, y_score)),
+        "precision": float(precision_score(y_true, y_pred, average="weighted", zero_division=0)),
+        "recall": float(recall_score(y_true, y_pred, average="weighted", zero_division=0)),
+        "f1": float(f1_score(y_true, y_pred, average="weighted", zero_division=0)),
+        "n_samples": int(len(df)),
+        "churn_rate": float(y_true.mean()),
     }
 
     logger.info(
         f"Baseline  ROC-AUC={metrics['roc_auc']:.4f}  "
         f"PR-AUC={metrics['pr_auc']:.4f}  "
+        f"Brier={metrics['brier_score']:.4f}  "
         f"Precision={metrics['precision']:.4f}  "
-        f"Recall={metrics['recall']:.4f}"
+        f"Recall={metrics['recall']:.4f}  "
+        f"F1={metrics['f1']:.4f}  "
+        f"N={metrics['n_samples']:,}  "
+        f"churn_rate={metrics['churn_rate']:.2%}"
     )
     return metrics

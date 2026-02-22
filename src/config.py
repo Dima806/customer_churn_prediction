@@ -38,11 +38,14 @@ FEATURE_WINDOWS: list[int] = [30, 60, 90]
 TEST_FRACTION: float = 0.20
 
 XGBOOST_PARAMS: dict = {
-    "n_estimators": 300,
-    "max_depth": 5,
+    "n_estimators": 200,  # was 300; fewer trees, less memorisation
+    "max_depth": 3,  # was 5: shallower trees generalise better
     "learning_rate": 0.05,
     "subsample": 0.8,
     "colsample_bytree": 0.8,
+    "min_child_weight": 5,  # min samples per leaf; prevents tiny splits
+    "gamma": 0.1,  # min gain required to make a split
+    "reg_alpha": 0.1,  # L1 regularisation on leaf weights
     "eval_metric": "auc",
     "random_state": SEED,
 }
@@ -54,6 +57,23 @@ MIN_ROC_AUC: float = 0.65
 MAX_BRIER_SCORE: float = 0.25
 MAX_ECE: float = 0.10  # Expected Calibration Error
 MIN_COVERAGE: float = 0.50  # Fraction of customers that must get a prediction
+
+# --- ML model additional guardrails ---
+MIN_PR_AUC: float = 0.20  # Precision-Recall AUC (harder bar under class imbalance)
+MAX_TRAIN_TEST_ROC_GAP: float = 0.15  # Max allowed gap between train and test ROC-AUC
+
+# --- ML vs baseline ---
+ML_BASELINE_TOLERANCE: float = 0.05  # ML ROC-AUC may not lag baseline by more than this
+ML_BASELINE_PR_AUC_TOLERANCE: float = 0.05  # ML PR-AUC lag tolerance
+
+# --- Distribution shift (adversarial validation) ---
+MAX_ADVERSARIAL_AUC: float = 0.70  # AUC > threshold signals train/test shift
+
+# --- Baseline quality guardrails ---
+BASELINE_MIN_ROC_AUC: float = 0.65
+BASELINE_MIN_PR_AUC: float = 0.40
+BASELINE_MIN_PRECISION: float = 0.55
+BASELINE_MIN_RECALL: float = 0.55
 
 # ---------------------------------------------------------------------------
 # Prediction risk buckets
