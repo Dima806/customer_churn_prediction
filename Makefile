@@ -55,6 +55,9 @@ test:             ## Run full test suite with coverage
 test-verbose:     ## Run tests with verbose output
 	uv run pytest --cov=src --cov-report=term-missing -v
 
+test-ci:          ## Run tests with coverage + XML report (used by CI)
+	uv run pytest --cov=src --cov-report=term-missing --cov-report=xml -q
+
 # ---------------------------------------------------------------------------
 # ML pipeline
 # ---------------------------------------------------------------------------
