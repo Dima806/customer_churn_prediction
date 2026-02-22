@@ -1,0 +1,115 @@
+name: ML Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_tune:
+        description: "Run hyperparameter tuning before training"
+        type: boolean
+        default: false
+      n_trials:
+        description: "Number of tuning trials (ignored if run_tune is false)"
+        type: string
+        default: "30"
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "pyproject.toml"
+
+concurrency:
+  group: train-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pipeline:
+    name: Generate → Tune → Train → Predict
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install runtime dependencies
+        run: uv sync --no-dev
+
+      # -----------------------------------------------------------------------
+      # Step 1 – Data
+      # -----------------------------------------------------------------------
+      - name: Generate synthetic data
+        run: uv run python -m src.data_generation.main
+
+      # -----------------------------------------------------------------------
+      # Step 2 – Tune (optional, skipped on automatic pushes unless requested)
+      # -----------------------------------------------------------------------
+      - name: Tune hyperparameters
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_tune == true }}
+        run: uv run python -m src.models.tune
+        env:
+          N_TRIALS: ${{ inputs.n_trials }}
+
+      # -----------------------------------------------------------------------
+      # Step 3 – Train
+      # -----------------------------------------------------------------------
+      - name: Train model
+        run: uv run python -m src.models.train
+
+      # -----------------------------------------------------------------------
+      # Step 4 – Predict
+      # -----------------------------------------------------------------------
+      - name: Batch predict
+        run: uv run python -m src.prediction.batch_predict
+
+      # -----------------------------------------------------------------------
+      # Upload artifacts
+      # -----------------------------------------------------------------------
+      - name: Upload model artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: model-artifacts-${{ github.sha }}
+          path: |
+            artifacts/xgb_churn_model.pkl
+            artifacts/best_params.json
+            artifacts/eval_metrics.json
+            artifacts/calibration.json
+            artifacts/roc_curve.json
+            artifacts/feature_importance.json
+            artifacts/guardrails.json
+            artifacts/distribution_shift.json
+          retention-days: 30
+
+      - name: Upload predictions
+        uses: actions/upload-artifact@v4
+        with:
+          name: predictions-${{ github.sha }}
+          path: predictions/churn_predictions.csv
+          retention-days: 30
+
+      # -----------------------------------------------------------------------
+      # Summary
+      # -----------------------------------------------------------------------
+      - name: Print evaluation metrics
+        run: |
+          python - <<'EOF'
+          import json, pathlib
+          metrics = json.loads(pathlib.Path("artifacts/eval_metrics.json").read_text())
+          guardrails = json.loads(pathlib.Path("artifacts/guardrails.json").read_text())
+          print("=== Evaluation Metrics ===")
+          for k in ("roc_auc", "pr_auc", "brier_score"):
+              print(f"  {k}: {metrics.get(k, 'n/a'):.4f}")
+          print("\n=== Guardrails ===")
+          passed = sum(1 for g in guardrails if g["passed"])
+          total  = len(guardrails)
+          print(f"  {passed}/{total} passed")
+          for g in guardrails:
+              status = "PASS" if g["passed"] else "FAIL"
+              print(f"  [{status}] {g['message']}")
+          if passed < total:
+              raise SystemExit(f"{total - passed} guardrail(s) failed")
+          EOF
