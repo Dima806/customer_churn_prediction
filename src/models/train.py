@@ -166,18 +166,18 @@ def build_augmented_training_set(
         aug_t_max: pd.Timestamp = aug_feature_end + pd.Timedelta(days=churn_period_days)
 
         # Eligible: placed at least one order on or before the augmented feature cutoff
-        pre_window_ids = set(
-            orders[orders["order_date"] <= aug_feature_end]["customer_id"]
-        ) & train_id_set
+        pre_window_ids = (
+            set(orders[orders["order_date"] <= aug_feature_end]["customer_id"]) & train_id_set
+        )
         if not pre_window_ids:
             logger.warning(f"Aug window {i}: no eligible training customers — skipping")
             continue
 
         # Labels: churned = no orders in the augmented churn window
         active_ids = set(
-            orders[
-                (orders["order_date"] > aug_feature_end) & (orders["order_date"] <= aug_t_max)
-            ]["customer_id"]
+            orders[(orders["order_date"] > aug_feature_end) & (orders["order_date"] <= aug_t_max)][
+                "customer_id"
+            ]
         )
         window_customers = train_customers[train_customers["customer_id"].isin(pre_window_ids)]
         target = pd.DataFrame({"customer_id": list(pre_window_ids)})
@@ -362,9 +362,7 @@ if __name__ == "__main__":
     if not X_aug.empty:
         X_train = pd.concat([X_train, X_aug], ignore_index=True)
         y_train = pd.concat([y_train, y_aug], ignore_index=True)
-        logger.info(
-            f"Augmented training set: {len(X_train):,} rows (churn={y_train.mean():.2%})"
-        )
+        logger.info(f"Augmented training set: {len(X_train):,} rows (churn={y_train.mean():.2%})")
 
     params = load_best_params() or XGBOOST_PARAMS.copy()
     model = train_xgboost(X_train, y_train, params)

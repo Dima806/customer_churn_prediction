@@ -42,7 +42,7 @@ TEST_FRACTION: float = 0.20
 # anchoring the churn observation window at earlier points in time, stepping back
 # AUG_STEP_DAYS at a time.  Features for every window are computed strictly before
 # that window's reference date, so there is no label leakage.
-AUG_N_WINDOWS: int = 25  # additional temporal snapshots per training customer
+AUG_N_WINDOWS: int = 5  # additional temporal snapshots per training customer
 AUG_STEP_DAYS: int = 30  # days between consecutive augmented windows
 
 XGBOOST_PARAMS: dict = {
