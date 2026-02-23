@@ -15,6 +15,8 @@ from sklearn.metrics import roc_curve
 from src.baseline.rule_based import evaluate_baseline
 from src.config import (
     ARTIFACTS_DIR,
+    AUG_N_WINDOWS,
+    AUG_STEP_DAYS,
     CHURN_PERIOD_DAYS,
     DATA_DIR,
     TEST_FRACTION,
@@ -111,6 +113,98 @@ def train_xgboost(
     model.fit(X_train, y_train, verbose=False)
     logger.info("XGBoost training complete")
     return model
+
+
+# ---------------------------------------------------------------------------
+# Sliding-window data augmentation
+# ---------------------------------------------------------------------------
+
+
+def build_augmented_training_set(
+    orders: pd.DataFrame,
+    customers: pd.DataFrame,
+    train_customer_ids: list,
+    feature_end_date: pd.Timestamp,
+    feature_cols: list[str],
+    n_windows: int = AUG_N_WINDOWS,
+    step_days: int = AUG_STEP_DAYS,
+    churn_period_days: int = CHURN_PERIOD_DAYS,
+) -> tuple[pd.DataFrame, pd.Series]:
+    """Generate extra (features, label) rows by sliding the churn window back in time.
+
+    For each window i ∈ {1, …, n_windows}:
+      aug_feature_end  = feature_end_date − i × step_days
+      aug_t_max        = aug_feature_end  + churn_period_days
+      label            = no orders in (aug_feature_end, aug_t_max]
+      features         = build_feature_matrix(orders, ..., reference_date=aug_feature_end)
+
+    Only training-set customers are used; test-set customers are never included.
+    All features are computed on orders strictly before ``aug_feature_end``, so there
+    is no leakage from the churn observation window or from future data.
+
+    Args:
+        orders: Full cleaned orders fact table.
+        customers: Customer dimension table.
+        train_customer_ids: Customer IDs that belong to the training split.
+        feature_end_date: The original feature cutoff (= T_max − churn_period_days).
+        feature_cols: Column names expected by the model (must match the primary window).
+        n_windows: Number of additional windows to generate.
+        step_days: Days to step back per window.
+        churn_period_days: Length of each churn observation window.
+
+    Returns:
+        Tuple of (X_aug, y_aug) — concatenated across all windows.
+        Returns empty DataFrames if no eligible customers are found in any window.
+    """
+    train_id_set = set(train_customer_ids)
+    train_customers = customers[customers["customer_id"].isin(train_id_set)]
+    X_parts: list[pd.DataFrame] = []
+    y_parts: list[pd.Series] = []
+
+    for i in range(1, n_windows + 1):
+        aug_feature_end: pd.Timestamp = feature_end_date - pd.Timedelta(days=i * step_days)
+        aug_t_max: pd.Timestamp = aug_feature_end + pd.Timedelta(days=churn_period_days)
+
+        # Eligible: placed at least one order on or before the augmented feature cutoff
+        pre_window_ids = set(
+            orders[orders["order_date"] <= aug_feature_end]["customer_id"]
+        ) & train_id_set
+        if not pre_window_ids:
+            logger.warning(f"Aug window {i}: no eligible training customers — skipping")
+            continue
+
+        # Labels: churned = no orders in the augmented churn window
+        active_ids = set(
+            orders[
+                (orders["order_date"] > aug_feature_end) & (orders["order_date"] <= aug_t_max)
+            ]["customer_id"]
+        )
+        window_customers = train_customers[train_customers["customer_id"].isin(pre_window_ids)]
+        target = pd.DataFrame({"customer_id": list(pre_window_ids)})
+        target["is_churned"] = (~target["customer_id"].isin(active_ids)).astype(int)
+
+        # Features: strictly before aug_feature_end
+        feats = build_feature_matrix(orders, window_customers, aug_feature_end)
+        merged = feats.merge(target, on="customer_id", how="inner")
+        if merged.empty:
+            continue
+
+        X_parts.append(merged[feature_cols])
+        y_parts.append(merged["is_churned"].reset_index(drop=True))
+        logger.info(
+            f"Aug window {i}: feature_end={aug_feature_end.date()}  "
+            f"t_max={aug_t_max.date()}  n={len(merged):,}  "
+            f"churn={merged['is_churned'].mean():.2%}"
+        )
+
+    if not X_parts:
+        logger.warning("No augmentation windows produced data; returning empty DataFrames")
+        return pd.DataFrame(columns=feature_cols), pd.Series(dtype=int, name="is_churned")
+
+    return (
+        pd.concat(X_parts, ignore_index=True),
+        pd.concat(y_parts, ignore_index=True),
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -250,6 +344,27 @@ if __name__ == "__main__":
 
     # --- Distribution shift: can the model tell train from test? ---
     shift_metrics = compute_adversarial_auc(X_train, X_test)
+
+    # --- Sliding-window data augmentation (training customers only, no leakage) ---
+    train_customer_ids = [
+        cid for cid in target_df["customer_id"].tolist() if cid not in set(test_customer_ids)
+    ]
+    X_aug, y_aug = build_augmented_training_set(
+        orders,
+        customers,
+        train_customer_ids,
+        feature_end_date,
+        feature_cols,
+        n_windows=AUG_N_WINDOWS,
+        step_days=AUG_STEP_DAYS,
+        churn_period_days=CHURN_PERIOD_DAYS,
+    )
+    if not X_aug.empty:
+        X_train = pd.concat([X_train, X_aug], ignore_index=True)
+        y_train = pd.concat([y_train, y_aug], ignore_index=True)
+        logger.info(
+            f"Augmented training set: {len(X_train):,} rows (churn={y_train.mean():.2%})"
+        )
 
     params = load_best_params() or XGBOOST_PARAMS.copy()
     model = train_xgboost(X_train, y_train, params)

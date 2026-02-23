@@ -37,6 +37,14 @@ FEATURE_WINDOWS: list[int] = [30, 60, 90]
 # ---------------------------------------------------------------------------
 TEST_FRACTION: float = 0.20
 
+# Sliding-window training-data augmentation.
+# Each training customer generates AUG_N_WINDOWS additional (features, label) rows by
+# anchoring the churn observation window at earlier points in time, stepping back
+# AUG_STEP_DAYS at a time.  Features for every window are computed strictly before
+# that window's reference date, so there is no label leakage.
+AUG_N_WINDOWS: int = 25  # additional temporal snapshots per training customer
+AUG_STEP_DAYS: int = 30  # days between consecutive augmented windows
+
 XGBOOST_PARAMS: dict = {
     "n_estimators": 200,  # was 300; fewer trees, less memorisation
     "max_depth": 3,  # was 5: shallower trees generalise better
