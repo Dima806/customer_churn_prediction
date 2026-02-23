@@ -1,3 +1,13 @@
+---
+title: Customer Churn Prediction
+emoji: 📊
+sdk: docker
+app_file: app.py
+pinned: true
+license: apache-2.0
+short_description: Sample plotly dashboard for customer churn prediction model
+---
+
 # Customer Churn Prediction
 
 A production-ready machine learning system that forecasts which customers are likely to churn within the next 90 days.  The project covers every stage of the ML lifecycle: synthetic data generation, leakage-free feature engineering, temporal cross-validation, XGBoost model training, rule-based baseline comparison, automated quality guardrails, batch prediction, and an interactive Plotly Dash dashboard.
