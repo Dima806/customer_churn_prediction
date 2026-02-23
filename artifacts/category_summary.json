@@ -1,0 +1,104 @@
+{
+  "segment": [
+    {
+      "category": "bronze",
+      "actual_churn_rate": 0.275,
+      "predicted_churn_rate": 0.30292487144470215,
+      "count": 160
+    },
+    {
+      "category": "gold",
+      "actual_churn_rate": 0.14666666666666667,
+      "predicted_churn_rate": 0.22922904789447784,
+      "count": 75
+    },
+    {
+      "category": "platinum",
+      "actual_churn_rate": 0.27586206896551724,
+      "predicted_churn_rate": 0.3489484190940857,
+      "count": 29
+    },
+    {
+      "category": "silver",
+      "actual_churn_rate": 0.26515151515151514,
+      "predicted_churn_rate": 0.29753246903419495,
+      "count": 132
+    }
+  ],
+  "channel": [
+    {
+      "category": "email",
+      "actual_churn_rate": 0.26373626373626374,
+      "predicted_churn_rate": 0.29940155148506165,
+      "count": 91
+    },
+    {
+      "category": "organic",
+      "actual_churn_rate": 0.224,
+      "predicted_churn_rate": 0.2834429442882538,
+      "count": 125
+    },
+    {
+      "category": "paid_search",
+      "actual_churn_rate": 0.1891891891891892,
+      "predicted_churn_rate": 0.2616746723651886,
+      "count": 74
+    },
+    {
+      "category": "social",
+      "actual_churn_rate": 0.3018867924528302,
+      "predicted_churn_rate": 0.3114538788795471,
+      "count": 106
+    }
+  ],
+  "country": [
+    {
+      "category": "AU",
+      "actual_churn_rate": 0.3333333333333333,
+      "predicted_churn_rate": 0.28507885336875916,
+      "count": 30
+    },
+    {
+      "category": "CA",
+      "actual_churn_rate": 0.3170731707317073,
+      "predicted_churn_rate": 0.3996576964855194,
+      "count": 41
+    },
+    {
+      "category": "DE",
+      "actual_churn_rate": 0.10810810810810811,
+      "predicted_churn_rate": 0.2506325840950012,
+      "count": 37
+    },
+    {
+      "category": "ES",
+      "actual_churn_rate": 0.25,
+      "predicted_churn_rate": 0.2409515231847763,
+      "count": 12
+    },
+    {
+      "category": "FR",
+      "actual_churn_rate": 0.2571428571428571,
+      "predicted_churn_rate": 0.299044132232666,
+      "count": 35
+    },
+    {
+      "category": "NL",
+      "actual_churn_rate": 0.10714285714285714,
+      "predicted_churn_rate": 0.2509339153766632,
+      "count": 28
+    },
+    {
+      "category": "UK",
+      "actual_churn_rate": 0.3125,
+      "predicted_churn_rate": 0.3136618435382843,
+      "count": 64
+    },
+    {
+      "category": "US",
+      "actual_churn_rate": 0.24161073825503357,
+      "predicted_churn_rate": 0.27103179693222046,
+      "count": 149
+    }
+  ]
+}

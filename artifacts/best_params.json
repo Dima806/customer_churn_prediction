@@ -1,0 +1,15 @@
+{
+  "params": {
+    "n_estimators": 100,
+    "max_depth": 3,
+    "learning_rate": 0.05,
+    "subsample": 0.9,
+    "colsample_bytree": 0.9,
+    "min_child_weight": 10,
+    "gamma": 0.3,
+    "reg_alpha": 0.5,
+    "eval_metric": "auc",
+    "random_state": 42
+  },
+  "score": 0.6629834060787986
+}

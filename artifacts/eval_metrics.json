@@ -1,0 +1,18 @@
+{
+  "roc_auc": 0.9071531297082591,
+  "pr_auc": 0.8392666046295794,
+  "brier_score": 0.09406806528568268,
+  "precision": 0.8697876197876199,
+  "recall": 0.8737373737373737,
+  "f1": 0.8703300342644605,
+  "threshold": 0.5,
+  "n_samples": 396,
+  "churn_rate": 0.2474747474747475,
+  "baseline_roc_auc": 0.784515819750719,
+  "baseline_pr_auc": 0.5040936578318393,
+  "baseline_brier_score": 0.19994623553457092,
+  "baseline_precision": 0.7819499341238472,
+  "baseline_recall": 0.6691919191919192,
+  "baseline_f1": 0.691831622186609,
+  "baseline_n_samples": 396
+}

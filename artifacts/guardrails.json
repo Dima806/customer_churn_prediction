@@ -1,0 +1,93 @@
+[
+  {
+    "check": "min_roc_auc",
+    "value": 0.9071531297082591,
+    "threshold": 0.65,
+    "passed": true,
+    "message": "min_roc_auc: 0.9072 >= 0.65 \u2192 PASS"
+  },
+  {
+    "check": "max_brier_score",
+    "value": 0.09406806528568268,
+    "threshold": 0.25,
+    "passed": true,
+    "message": "max_brier_score: 0.0941 <= 0.25 \u2192 PASS"
+  },
+  {
+    "check": "max_ece",
+    "value": 0.075466,
+    "threshold": 0.1,
+    "passed": true,
+    "message": "max_ece: 0.0755 <= 0.1 \u2192 PASS"
+  },
+  {
+    "check": "min_coverage",
+    "value": 0.9915,
+    "threshold": 0.5,
+    "passed": true,
+    "message": "min_coverage: 0.9915 >= 0.5 \u2192 PASS"
+  },
+  {
+    "check": "min_pr_auc",
+    "value": 0.8392666046295794,
+    "threshold": 0.2,
+    "passed": true,
+    "message": "min_pr_auc: 0.8393 >= 0.2 \u2192 PASS"
+  },
+  {
+    "check": "max_train_test_roc_gap",
+    "value": -0.020647611951881917,
+    "threshold": 0.15,
+    "passed": true,
+    "message": "train_test_roc_gap: train=0.8865 test=0.9072 gap=-0.0206 <= 0.15 \u2192 PASS"
+  },
+  {
+    "check": "ml_vs_baseline_roc_auc",
+    "value": 0.12263730995754007,
+    "threshold": -0.05,
+    "passed": true,
+    "message": "ml_vs_baseline_roc_auc: ml=0.9072 baseline=0.7845 diff=+0.1226 >= -0.05 \u2192 PASS"
+  },
+  {
+    "check": "ml_vs_baseline_pr_auc",
+    "value": 0.33517294679774,
+    "threshold": -0.05,
+    "passed": true,
+    "message": "ml_vs_baseline_pr_auc: ml=0.8393 baseline=0.5041 diff=+0.3352 >= -0.05 \u2192 PASS"
+  },
+  {
+    "check": "baseline_min_roc_auc",
+    "value": 0.784515819750719,
+    "threshold": 0.65,
+    "passed": true,
+    "message": "baseline_min_roc_auc: 0.7845 >= 0.65 \u2192 PASS"
+  },
+  {
+    "check": "baseline_min_pr_auc",
+    "value": 0.5040936578318393,
+    "threshold": 0.4,
+    "passed": true,
+    "message": "baseline_min_pr_auc: 0.5041 >= 0.4 \u2192 PASS"
+  },
+  {
+    "check": "baseline_min_precision",
+    "value": 0.7819499341238472,
+    "threshold": 0.55,
+    "passed": true,
+    "message": "baseline_min_precision: 0.7819 >= 0.55 \u2192 PASS"
+  },
+  {
+    "check": "baseline_min_recall",
+    "value": 0.6691919191919192,
+    "threshold": 0.55,
+    "passed": true,
+    "message": "baseline_min_recall: 0.6692 >= 0.55 \u2192 PASS"
+  },
+  {
+    "check": "max_adversarial_auc",
+    "value": 0.4797934778595909,
+    "threshold": 0.7,
+    "passed": true,
+    "message": "max_adversarial_auc: 0.4798 <= 0.7 \u2192 PASS"
+  }
+]

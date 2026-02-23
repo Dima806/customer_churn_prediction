@@ -209,10 +209,8 @@ __marimo__/
 # .llm folder is used by some tools to store large language model data, such as embeddings or vector databases.
 .llm/
 
-# Project-specific: generated data, model artifacts, predictions
+# Project-specific: generated data
 data/
-predictions/
-artifacts/
 
 # vscode settings
 .vscode/

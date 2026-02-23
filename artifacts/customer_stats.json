@@ -1,0 +1,24 @@
+{
+  "segment": {
+    "bronze": 811,
+    "silver": 613,
+    "gold": 402,
+    "platinum": 174
+  },
+  "channel": {
+    "organic": 592,
+    "social": 515,
+    "email": 492,
+    "paid_search": 401
+  },
+  "country": {
+    "US": 747,
+    "UK": 284,
+    "DE": 202,
+    "FR": 198,
+    "CA": 194,
+    "AU": 161,
+    "NL": 126,
+    "ES": 88
+  }
+}
