@@ -332,4 +332,46 @@ if __name__ == "__main__":
         shift_metrics,
     )
 
+    # --- Category-level summary for dashboard (test-set actual vs predicted) ---
+    test_df_cats = pd.DataFrame(
+        {"customer_id": test_customer_ids, "actual": y_test.to_numpy(), "predicted": y_prob_test}
+    )
+    test_df_cats = test_df_cats.merge(
+        customers[["customer_id", "segment", "marketing_channel", "country"]],
+        on="customer_id",
+        how="left",
+    )
+    category_summary: dict = {}
+    for raw_col, key in [
+        ("segment", "segment"),
+        ("marketing_channel", "channel"),
+        ("country", "country"),
+    ]:
+        grp = (
+            test_df_cats.groupby(raw_col)
+            .agg(
+                actual_churn_rate=("actual", "mean"),
+                predicted_churn_rate=("predicted", "mean"),
+                count=("actual", "count"),
+            )
+            .reset_index()
+            .sort_values(raw_col)
+            .rename(columns={raw_col: "category"})
+        )
+        category_summary[key] = grp.to_dict("records")
+
+    customer_counts: dict = {}
+    for raw_col, key in [
+        ("segment", "segment"),
+        ("marketing_channel", "channel"),
+        ("country", "country"),
+    ]:
+        customer_counts[key] = customers[raw_col].value_counts().to_dict()
+
+    with open(ARTIFACTS_DIR / "category_summary.json", "w") as fh:
+        json.dump(category_summary, fh, indent=2)
+    with open(ARTIFACTS_DIR / "customer_stats.json", "w") as fh:
+        json.dump(customer_counts, fh, indent=2)
+    logger.info("Category summary artifacts saved")
+
     logger.info("=== Training complete ===")

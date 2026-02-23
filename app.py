@@ -60,6 +60,8 @@ def load_all() -> dict:
         "feature_importance": _load_json("feature_importance.json"),
         "roc_curve": _load_json("roc_curve.json"),
         "guardrails": _load_json("guardrails.json"),
+        "customer_stats": _load_json("customer_stats.json"),
+        "category_summary": _load_json("category_summary.json"),
     }
 
 
@@ -266,6 +268,142 @@ def fig_feature_importance(fi: dict | None) -> go.Figure:
     return fig
 
 
+_SEGMENT_ORDER = ["bronze", "silver", "gold", "platinum"]
+_SEGMENT_COLORS = ["#cd7f32", "#c0c0c0", "#ffd700", "#e5e4e2"]
+_CHANNEL_ORDER = ["organic", "email", "social", "paid_search"]
+
+
+def _ordered(raw: dict, order: list[str]) -> tuple[list[str], list]:
+    """Return (keys, values) from *raw* sorted by *order*, extras appended alphabetically."""
+    keys = [k for k in order if k in raw] + sorted(k for k in raw if k not in order)
+    return keys, [raw[k] for k in keys]
+
+
+def fig_customers_by_segment(customer_stats: dict | None) -> go.Figure:
+    if customer_stats is None or "segment" not in customer_stats:
+        return _no_data_fig("Customers by Segment")
+    cats, counts = _ordered(customer_stats["segment"], _SEGMENT_ORDER)
+    fig = go.Figure(
+        go.Bar(
+            x=cats,
+            y=counts,
+            marker_color=_SEGMENT_COLORS[: len(cats)],
+            text=counts,
+            textposition="outside",
+        )
+    )
+    fig.update_layout(
+        title="Customers by Segment",
+        yaxis_title="Customers",
+        paper_bgcolor="white",
+        plot_bgcolor=_PALETTE["grid"],
+    )
+    return fig
+
+
+def fig_customers_by_channel(customer_stats: dict | None) -> go.Figure:
+    if customer_stats is None or "channel" not in customer_stats:
+        return _no_data_fig("Customers by Channel")
+    cats, counts = _ordered(customer_stats["channel"], _CHANNEL_ORDER)
+    fig = go.Figure(
+        go.Bar(
+            x=cats,
+            y=counts,
+            marker_color=_PALETTE["primary"],
+            text=counts,
+            textposition="outside",
+        )
+    )
+    fig.update_layout(
+        title="Customers by Acquisition Channel",
+        yaxis_title="Customers",
+        paper_bgcolor="white",
+        plot_bgcolor=_PALETTE["grid"],
+    )
+    return fig
+
+
+def _churn_by_category_fig(
+    category_summary: dict | None,
+    key: str,
+    title: str,
+    order: list[str] | None = None,
+) -> go.Figure:
+    """Grouped bar: actual (test-set) vs predicted churn rate per category."""
+    fig = go.Figure()
+    if category_summary is None or key not in category_summary:
+        fig.add_annotation(
+            text="Run <b>make train</b> first",
+            xref="paper",
+            yref="paper",
+            x=0.5,
+            y=0.5,
+            showarrow=False,
+            font=dict(size=13, color="#7f8c8d"),
+        )
+        fig.update_layout(title=title, paper_bgcolor="white", plot_bgcolor="white")
+        return fig
+
+    records = category_summary[key]
+    if order:
+        records = sorted(
+            records,
+            key=lambda r: order.index(r["category"]) if r["category"] in order else len(order),
+        )
+    cats = [r["category"] for r in records]
+    actuals = [r["actual_churn_rate"] for r in records]
+    predicted = [r["predicted_churn_rate"] for r in records]
+
+    fig.add_trace(
+        go.Bar(
+            name="Actual (test set)",
+            x=cats,
+            y=actuals,
+            marker_color=_PALETTE["high"],
+            text=[f"{v:.1%}" for v in actuals],
+            textposition="outside",
+        )
+    )
+    fig.add_trace(
+        go.Bar(
+            name="Predicted",
+            x=cats,
+            y=predicted,
+            marker_color=_PALETTE["primary"],
+            text=[f"{v:.1%}" for v in predicted],
+            textposition="outside",
+        )
+    )
+    fig.update_layout(
+        title=title,
+        yaxis_title="Churn Rate",
+        yaxis_tickformat=".0%",
+        barmode="group",
+        paper_bgcolor="white",
+        plot_bgcolor=_PALETTE["grid"],
+        legend=dict(x=0.01, y=0.99),
+    )
+    return fig
+
+
+def fig_churn_by_segment(category_summary: dict | None) -> go.Figure:
+    return _churn_by_category_fig(
+        category_summary, "segment", "Churn Rate by Segment (Actual vs Predicted)", _SEGMENT_ORDER
+    )
+
+
+def fig_churn_by_channel(category_summary: dict | None) -> go.Figure:
+    return _churn_by_category_fig(
+        category_summary, "channel", "Churn Rate by Channel (Actual vs Predicted)", _CHANNEL_ORDER
+    )
+
+
+def fig_churn_by_country(category_summary: dict | None) -> go.Figure:
+    return _churn_by_category_fig(
+        category_summary, "country", "Churn Rate by Country (Actual vs Predicted)"
+    )
+
+
 def _kpi_card(label: str, value: str, color: str = "#2c3e50") -> html.Div:
     return html.Div(
         [
@@ -402,6 +540,38 @@ def build_layout(data: dict) -> html.Div:
                             ),
                         ],
                         style={"display": "flex", "gap": "16px", "marginBottom": "16px"},
+                    ),
+                    # Row 3: Customer portfolio
+                    html.Div(
+                        [
+                            dcc.Graph(
+                                figure=fig_customers_by_segment(data.get("customer_stats")),
+                                style={"flex": "1"},
+                            ),
+                            dcc.Graph(
+                                figure=fig_customers_by_channel(data.get("customer_stats")),
+                                style={"flex": "1"},
+                            ),
+                        ],
+                        style={"display": "flex", "gap": "16px", "marginBottom": "16px"},
+                    ),
+                    # Row 4: Predicted vs actual churn by category
+                    html.Div(
+                        [
+                            dcc.Graph(
+                                figure=fig_churn_by_segment(data.get("category_summary")),
+                                style={"flex": "1"},
+                            ),
+                            dcc.Graph(
+                                figure=fig_churn_by_channel(data.get("category_summary")),
+                                style={"flex": "1"},
+                            ),
+                        ],
+                        style={"display": "flex", "gap": "16px", "marginBottom": "16px"},
+                    ),
+                    dcc.Graph(
+                        figure=fig_churn_by_country(data.get("category_summary")),
+                        style={"marginBottom": "16px"},
                     ),
                     # Feature importance (full width)
                     dcc.Graph(
