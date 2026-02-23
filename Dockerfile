@@ -34,7 +34,7 @@ RUN uv sync --no-dev
 # Application code and artefacts
 # ---------------------------------------------------------------------------
 COPY src/ ./src/
-COPY dashboard/ ./dashboard/
+COPY app.py ./
 
 # Predictions and model artefacts are expected to have been pre-built
 # (run `make all` locally before building the image)
@@ -51,4 +51,4 @@ USER appuser
 EXPOSE 7860
 ENV PORT=7860
 
-CMD ["uv", "run", "python", "dashboard/app.py"]
+CMD ["uv", "run", "python", "app.py"]

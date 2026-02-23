@@ -29,13 +29,13 @@ data:             ## Generate synthetic star-schema CSVs into data/
 # ---------------------------------------------------------------------------
 
 lint:             ## Run ruff linter
-	uv run ruff check src/ tests/ dashboard/
+	uv run ruff check src/ tests/ app.py
 
 format:           ## Auto-format code with ruff
-	uv run ruff format src/ tests/ dashboard/
+	uv run ruff format src/ tests/ app.py
 
 format-check:     ## Check formatting without writing changes
-	uv run ruff format --check src/ tests/ dashboard/
+	uv run ruff format --check src/ tests/ app.py
 
 audit:            ## Dependency vulnerability audit
 	uv run pip-audit
@@ -80,7 +80,7 @@ predict:          ## Batch-predict churn for all customers
 # ---------------------------------------------------------------------------
 
 dashboard:        ## Launch the Plotly Dash dashboard on port 7860
-	uv run python dashboard/app.py
+	uv run python app.py
 
 # ---------------------------------------------------------------------------
 # Docker

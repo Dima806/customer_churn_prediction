@@ -10,7 +10,7 @@ Sections:
   7. Guardrail status table
 
 Run locally:
-    uv run python dashboard/app.py
+    uv run python app.py
 
 Docker / HuggingFace Spaces:
     The app listens on 0.0.0.0:7860 (env PORT overrides the port).
@@ -29,7 +29,7 @@ from dash import Dash, dash_table, dcc, html
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
-ROOT_DIR = Path(__file__).parent.parent
+ROOT_DIR = Path(__file__).parent
 PREDICTIONS_PATH = ROOT_DIR / "predictions" / "churn_predictions.csv"
 ARTIFACTS_DIR = ROOT_DIR / "artifacts"
 

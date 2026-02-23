@@ -73,8 +73,7 @@ customer_churn_prediction/
 │   │   └── distribution_shift.py    # Adversarial validation (KS + AUC)
 │   └── prediction/
 │       └── batch_predict.py         # Score all customers → risk buckets
-├── dashboard/
-│   └── app.py                       # Plotly Dash on port 7860
+├── app.py                           # Plotly Dash on port 7860
 ├── tests/                           # pytest unit tests (44+ tests)
 ├── data/                            # Generated CSVs (gitignored)
 ├── artifacts/                       # Model + evaluation artifacts (gitignored)
